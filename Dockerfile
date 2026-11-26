@@ -1,31 +1,31 @@
-FROM node:20-alpine
+# Base image
+FROM node:24-alpine
 
 # Set working directory
 WORKDIR /app
 
+# Set production environment
+ENV NODE_ENV=production
+
 # Copy dependency file first
 COPY package.json ./
 
-# Install dependencies
-RUN npm install
+# Install production dependencies
+RUN npm install --omit=dev && \
+    npm cache clean --force
 
-# Copy remaining application code
-COPY . .
+# Create a non-root user
+RUN addgroup -S roboshop && \
+    adduser -S roboshop -G roboshop
 
-# Create a non-root user and give ownership
-RUN addgroup -S roboshop && adduser -S roboshop -G roboshop
-RUN chown -R roboshop:roboshop /app
+# Copy remaining application code and assign ownership
+COPY --chown=roboshop:roboshop . .
 
-# Set environment variables
-ENV REDIS_HOST=redis
-ENV CATALOGUE_HOST=catalogue
-ENV CATALOGUE_PORT=8080
-
-# Switch user
+# Switch to non-root user
 USER roboshop
 
-# Expose port
+# Expose application port
 EXPOSE 8080
 
-# Start app
+# Start application
 CMD ["node", "server.js"]
