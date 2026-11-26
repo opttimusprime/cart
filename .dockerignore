@@ -1,0 +1,26 @@
+# Node.js dependencies
+node_modules
+npm-debug.log*
+
+# Git files
+.git
+.github
+.gitignore
+
+# Docker files
+Dockerfile
+.dockerignore
+
+# Documentation
+README.md
+
+# Jenkins pipeline files
+Jenkinsfile*
+
+# Kubernetes and Helm files
+kubernetes/
+helm/
+
+# Environment files
+.env
+.env.*

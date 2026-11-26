@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cart
+  namespace: cart
+  labels:
+    app: cart
+    project: roboshop
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: cart
+
+  template:
+    metadata:
+      labels:
+        app: cart
+        project: roboshop
+
+    spec:
+      serviceAccountName: cart-sa
+
+      containers:
+        - name: cart
+          image: "717090908085.dkr.ecr.us-east-1.amazonaws.com/roboshop/cart@{{ .Values.image.digest }}"
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+
+          # Application environment variables
+          env:
+            - name: REDIS_HOST
+              value: "redis.redis.svc.cluster.local"
+
+            - name: CATALOGUE_HOST
+              value: "catalogue.catalogue.svc.cluster.local"
+
+            - name: CATALOGUE_PORT
+              value: "8080"
+
+            - name: CART_SERVER_PORT
+              value: "8080"
+
+          # Resource requests and limits
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
+          # Liveness probe
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 1
+            failureThreshold: 3
+
+          # Readiness probe
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 1
+            failureThreshold: 3
